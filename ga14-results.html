@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GA-14 Special Election Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface2: #1a2236;
+  --border: #2a3450;
+  --text: #e2e8f0;
+  --text-dim: #8892a8;
+  --text-muted: #4a5568;
+  --dem: #3b82f6;
+  --dem-bright: #60a5fa;
+  --dem-bg: rgba(59, 130, 246, 0.12);
+  --rep: #ef4444;
+  --rep-bright: #f87171;
+  --rep-bg: rgba(239, 68, 68, 0.12);
+  --ind: #a78bfa;
+  --accent: #f59e0b;
+  --accent-dim: rgba(245, 158, 11, 0.15);
+  --runoff: #f59e0b;
+  --eevp-track: #1e293b;
+  --eevp-fill: #334155;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Public Sans', sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.grain {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ─── HEADER ─── */
+header {
+  padding: 40px 0 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.top-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
+
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 4px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.source-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+h1 {
+  font-family: 'Crimson Pro', serif;
+  font-size: 42px; font-weight: 700;
+  line-height: 1.1; margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+h1 .district {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.subtitle {
+  font-size: 16px; color: var(--text-dim);
+  font-weight: 300; margin-bottom: 12px;
+}
+
+.meta-row {
+  display: flex; flex-wrap: wrap; gap: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--text-muted);
+}
+
+.meta-row span { display: flex; align-items: center; gap: 4px; }
+
+/* ─── RUNOFF BANNER ─── */
+.runoff-banner {
+  background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 24px 0;
+  display: flex; align-items: center; gap: 14px;
+}
+
+.runoff-banner .icon {
+  font-size: 28px; flex-shrink: 0;
+}
+
+.runoff-banner .text {
+  font-size: 15px; color: var(--text);
+}
+
+.runoff-banner strong {
+  color: var(--accent);
+}
+
+/* ─── EEVP BAR ─── */
+.eevp-section {
+  margin: 24px 0;
+}
+
+.eevp-label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.eevp-label .title {
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.eevp-label .value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px; font-weight: 700; color: var(--text);
+}
+
+.eevp-bar {
+  height: 8px; background: var(--eevp-track);
+  border-radius: 4px; overflow: hidden;
+  position: relative;
+}
+
+.eevp-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--eevp-fill), #475569);
+  transition: width 0.8s ease;
+}
+
+.eevp-details {
+  display: flex; gap: 24px; margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-muted);
+}
+
+/* ─── MAIN RESULTS TABLE ─── */
+.results-section { margin: 32px 0; }
+
+.section-title {
+  font-family: 'Crimson Pro', serif;
+  font-size: 24px; font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.results-table th:first-child { text-align: left; }
+.results-table th.bar-col { text-align: left; }
+
+.results-table td {
+  padding: 10px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-align: right;
+  border-bottom: 1px solid rgba(42, 52, 80, 0.5);
+  vertical-align: middle;
+}
+
+.results-table td:first-child { text-align: left; font-family: 'Public Sans', sans-serif; font-size: 14px; }
+
+.results-table tr.runoff-row { background: rgba(245, 158, 11, 0.04); }
+.results-table tr.runoff-row td:first-child { border-left: 3px solid var(--runoff); padding-left: 9px; }
+.results-table tr.minor td { color: var(--text-muted); font-size: 12px; }
+
+.cand-cell {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.party-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.party-dot.dem { background: var(--dem); }
+.party-dot.rep { background: var(--rep); }
+.party-dot.ind { background: var(--ind); }
+
+.cand-name { font-weight: 600; }
+.cand-party { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+
+.runoff-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 2px 6px; border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.bar-cell { text-align: left !important; }
+
+.vote-bar {
+  height: 16px; border-radius: 2px;
+  transition: width 0.6s ease;
+  min-width: 2px;
+}
+
+.vote-bar.dem { background: var(--dem); }
+.vote-bar.rep { background: var(--rep); }
+.vote-bar.ind { background: var(--ind); }
+
+.pct-cell { font-weight: 700; font-size: 14px; }
+
+/* ─── PARTY SUMMARY ─── */
+.party-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin: 24px 0;
+}
+
+.party-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.party-card.dem-card { border-top: 3px solid var(--dem); }
+.party-card.rep-card { border-top: 3px solid var(--rep); }
+.party-card.oth-card { border-top: 3px solid var(--ind); }
+
+.party-card .label {
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-muted);
+  font-weight: 600; margin-bottom: 4px;
+}
+
+.party-card .votes {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px; font-weight: 700;
+}
+
+.party-card .pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--text-dim);
+}
+
+.party-card.dem-card .votes { color: var(--dem-bright); }
+.party-card.rep-card .votes { color: var(--rep-bright); }
+.party-card.oth-card .votes { color: var(--ind); }
+
+/* ─── VOTE TYPE BREAKDOWN ─── */
+.vote-type-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin: 24px 0;
+}
+
+.vote-type-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.vote-type-card .vt-title {
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-dim); margin-bottom: 12px;
+}
+
+.vt-stacked-bar {
+  height: 24px; border-radius: 4px;
+  display: flex; overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.vt-stacked-bar .seg {
+  height: 100%; transition: width 0.5s ease;
+}
+
+.vt-stacked-bar .seg.dem { background: var(--dem); }
+.vt-stacked-bar .seg.rep { background: var(--rep); }
+.vt-stacked-bar .seg.oth { background: var(--ind); }
+
+.vt-legend {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+}
+
+.vt-legend span { display: flex; align-items: center; gap: 4px; }
+.vt-legend .dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* ─── COUNTY GRID ─── */
+.county-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; margin: 24px 0;
+}
+
+@media (max-width: 700px) {
+  .county-grid { grid-template-columns: 1fr; }
+  .vote-type-grid { grid-template-columns: 1fr; }
+  .party-summary { grid-template-columns: 1fr; }
+  h1 { font-size: 28px; }
+}
+
+.county-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.county-card:hover { border-color: var(--text-muted); }
+
+.county-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.county-name {
+  font-weight: 700; font-size: 14px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+.county-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-muted);
+  display: flex; gap: 12px;
+}
+
+.county-body { padding: 12px 16px; }
+
+.county-cand-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; font-size: 13px;
+}
+
+.county-cand-row .cc-name {
+  flex: 0 0 140px; display: flex; align-items: center; gap: 6px;
+}
+
+.county-cand-row .cc-bar-wrap {
+  flex: 1; height: 14px; background: var(--eevp-track);
+  border-radius: 2px; overflow: hidden;
+}
+
+.county-cand-row .cc-bar {
+  height: 100%; border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.county-cand-row .cc-pct {
+  flex: 0 0 45px; text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 600;
+}
+
+.county-cand-row .cc-votes {
+  flex: 0 0 55px; text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-muted);
+}
+
+.county-others {
+  font-size: 11px; color: var(--text-muted);
+  padding: 4px 0; font-style: italic;
+}
+
+.county-total-bar {
+  display: flex; height: 4px; border-radius: 2px;
+  overflow: hidden; margin-top: 8px;
+}
+
+.county-total-bar .seg { height: 100%; }
+
+/* ─── FOOTER ─── */
+footer {
+  margin: 48px 0 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  height: 60vh; font-size: 18px; color: var(--text-dim);
+}
+
+.error-msg {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--rep-bright);
+  padding: 16px; border-radius: 8px;
+  margin: 24px 0; font-size: 14px;
+}
+
+/* stagger animation */
+.fade-in {
+  opacity: 0; transform: translateY(12px);
+  animation: fadeUp 0.5s ease forwards;
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="container" id="app">
+  <div class="loading" id="loader">Fetching results from NYT / AP…</div>
+</div>
+
+<script>
+const API_URL = "https://static01.nyt.com/elections-assets/pages/data/2026-03-10/results-georgia-us-house-14-special.json";
+
+const CANDIDATES = {
+  "harris-s":      { name: "Shawn Harris",       party: "Dem" },
+  "fuller-c":      { name: "Clay Fuller",        party: "Rep" },
+  "moore-c":       { name: "Colton Moore",       party: "Rep" },
+  "stover-b":      { name: "Brian Stover",       party: "Rep" },
+  "gray-t":        { name: "Tom Gray",           party: "Rep" },
+  "davis-j":       { name: "Jim Davis",          party: "Dem" },
+  "lama-n":        { name: "Nicky Lama",         party: "Rep" },
+  "tully-j":       { name: "Jim Tully",          party: "Rep" },
+  "hobbs-j":       { name: "Jared Hobbs",        party: "Rep" },
+  "brown-b":       { name: "Beau Brown",         party: "Rep" },
+  "turnipseed-j":  { name: "Jenna Turnipseed",   party: "Rep" },
+  "black-s":       { name: "Star Black",         party: "Rep" },
+  "cunningham-e":  { name: "Eric Cunningham",    party: "Rep" },
+  "box-r":         { name: "Regan Box",          party: "Rep" },
+  "underwood-a":   { name: "Andrew Underwood",   party: "Ind" },
+  "strickland-m":  { name: "Megahn Strickland",  party: "Rep" },
+  "ruszkowski-r":  { name: "Richard Ruszkowski", party: "Ind" },
+};
+
+function getCand(nytId) {
+  return CANDIDATES[nytId] || { name: nytId, party: "?" };
+}
+
+function partyClass(party) {
+  if (party === "Dem") return "dem";
+  if (party === "Rep") return "rep";
+  return "ind";
+}
+
+function num(n) { return (n || 0).toLocaleString(); }
+function pct(n, d) { return d > 0 ? (n / d * 100).toFixed(1) : "0.0"; }
+
+function timeAgo(isoStr) {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  return `${Math.floor(mins/60)}h ${mins%60}m ago`;
+}
+
+function render(data) {
+  const race = data.races[0];
+  const ru = race.reporting_units[0];
+  const total = ru.total_votes;
+  const expected = ru.total_expected_vote;
+  const eevp = ru.eevp;
+  const advanced = race.outcome.advanced_to_runoff || [];
+  const isRunoff = advanced.length >= 2;
+
+  // Parse candidates
+  const cands = ru.candidates.map(c => {
+    const info = getCand(c.nyt_id);
+    return {
+      id: c.nyt_id,
+      name: info.name,
+      party: info.party,
+      total: c.votes.total || 0,
+      early: c.votes.absentee_in_person || 0,
+      mail: c.votes.absentee_mail || 0,
+      eday: c.votes.election_day_in_person || 0,
+      provisional: c.votes.provisional || 0,
+      leader: c.leader,
+      runoff: advanced.includes(c.nyt_id),
+    };
+  }).sort((a, b) => b.total - a.total);
+
+  // Party totals
+  const demVotes = cands.filter(c => c.party === "Dem").reduce((s, c) => s + c.total, 0);
+  const repVotes = cands.filter(c => c.party === "Rep").reduce((s, c) => s + c.total, 0);
+  const othVotes = total - demVotes - repVotes;
+
+  // Vote type totals
+  const totalEarly = cands.reduce((s, c) => s + c.early, 0);
+  const totalMail = cands.reduce((s, c) => s + c.mail, 0);
+  const totalEday = cands.reduce((s, c) => s + c.eday, 0);
+
+  // Counties
+  const counties = race.reporting_units.filter(u => u.level === "county").sort((a, b) => b.total_votes - a.total_votes);
+
+  // Build HTML
+  let html = "";
+
+  // ─── HEADER ───
+  html += `
+  <header class="fade-in" style="animation-delay:0s">
+    <div class="top-bar">
+      <div class="live-badge"><span class="live-dot"></span> ${eevp >= 99 ? "FINAL" : "LIVE RESULTS"}</div>
+      <span class="source-tag">NYT / AP &middot; Updated ${timeAgo(race.updated_at)}</span>
+    </div>
+    <h1>Georgia <span class="district">14th District</span> Special Election</h1>
+    <div class="subtitle">Replacing Marjorie Taylor Greene &middot; March 10, 2026 &middot; All-party jungle primary</div>
+    <div class="meta-row">
+      <span>🗳️ ${num(total)} votes counted</span>
+      <span>📊 ${ru.precincts_reporting}/${ru.precincts_total} precincts</span>
+      <span>🎯 50%+1 to win outright</span>
+      <span>📅 Runoff: April 7</span>
+    </div>
+  </header>`;
+
+  // ─── RUNOFF BANNER ───
+  if (isRunoff) {
+    const r1 = getCand(advanced[0]);
+    const r2 = getCand(advanced[1]);
+    html += `
+    <div class="runoff-banner fade-in" style="animation-delay:0.1s">
+      <div class="icon">🔄</div>
+      <div class="text">
+        No candidate reached 50%. <strong>${r1.name}</strong> (${r1.party}) and <strong>${r2.name}</strong> (${r2.party}) advance to an <strong>April 7 runoff</strong>.
+      </div>
+    </div>`;
+  }
+
+  // ─── EEVP ───
+  html += `
+  <div class="eevp-section fade-in" style="animation-delay:0.15s">
+    <div class="eevp-label">
+      <span class="title">Estimated Expected Vote Percentage</span>
+      <span class="value">${eevp}%</span>
+    </div>
+    <div class="eevp-bar"><div class="eevp-fill" style="width:${eevp}%"></div></div>
+    <div class="eevp-details">
+      <span>${num(total)} of ~${num(expected)} expected votes</span>
+      <span>Early: ${pct(totalEarly, total)}%</span>
+      <span>Mail: ${pct(totalMail, total)}%</span>
+      <span>Election Day: ${pct(totalEday, total)}%</span>
+    </div>
+  </div>`;
+
+  // ─── MAIN RESULTS TABLE ───
+  html += `<div class="results-section fade-in" style="animation-delay:0.2s">`;
+  html += `<div class="section-title">Statewide Results</div>`;
+  html += `<table class="results-table">
+    <thead><tr>
+      <th>Candidate</th>
+      <th class="bar-col" style="width:200px">Vote Share</th>
+      <th>%</th>
+      <th>Votes</th>
+      <th>Early</th>
+      <th>Mail</th>
+      <th>E-Day</th>
+    </tr></thead><tbody>`;
+
+  const maxVotes = cands[0].total;
+
+  cands.forEach((c, i) => {
+    const p = pct(c.total, total);
+    const barW = (c.total / maxVotes * 100).toFixed(1);
+    const isMinor = i >= 5 && parseFloat(p) < 2;
+    const rowClass = c.runoff ? "runoff-row" : (isMinor ? "minor" : "");
+
+    html += `<tr class="${rowClass}">
+      <td>
+        <div class="cand-cell">
+          <span class="party-dot ${partyClass(c.party)}"></span>
+          <span>
+            <span class="cand-name">${c.name}</span>
+            <span class="cand-party"> ${c.party}</span>
+          </span>
+          ${c.runoff ? '<span class="runoff-tag">RUNOFF</span>' : ""}
+        </div>
+      </td>
+      <td class="bar-cell"><div class="vote-bar ${partyClass(c.party)}" style="width:${barW}%"></div></td>
+      <td class="pct-cell">${p}%</td>
+      <td>${num(c.total)}</td>
+      <td>${num(c.early)}</td>
+      <td>${num(c.mail)}</td>
+      <td>${num(c.eday)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+
+  // ─── PARTY SUMMARY ───
+  html += `
+  <div class="party-summary fade-in" style="animation-delay:0.3s">
+    <div class="party-card dem-card">
+      <div class="label">Democratic</div>
+      <div class="votes">${num(demVotes)}</div>
+      <div class="pct">${pct(demVotes, total)}% &middot; ${cands.filter(c=>c.party==="Dem").length} candidates</div>
+    </div>
+    <div class="party-card rep-card">
+      <div class="label">Republican</div>
+      <div class="votes">${num(repVotes)}</div>
+      <div class="pct">${pct(repVotes, total)}% &middot; ${cands.filter(c=>c.party==="Rep").length} candidates</div>
+    </div>
+    <div class="party-card oth-card">
+      <div class="label">Independent</div>
+      <div class="votes">${num(othVotes)}</div>
+      <div class="pct">${pct(othVotes, total)}% &middot; ${cands.filter(c=>c.party==="Ind").length} candidates</div>
+    </div>
+  </div>`;
+
+  // ─── VOTE TYPE BREAKDOWN ───
+  html += `<div class="results-section fade-in" style="animation-delay:0.35s">`;
+  html += `<div class="section-title">Vote Type Breakdown</div>`;
+  html += `<div class="vote-type-grid">`;
+
+  const voteTypes = [
+    { key: "early", label: "Early In-Person", total: totalEarly },
+    { key: "mail", label: "Absentee / Mail", total: totalMail },
+    { key: "eday", label: "Election Day", total: totalEday },
+  ];
+
+  voteTypes.forEach(vt => {
+    const demT = cands.filter(c=>c.party==="Dem").reduce((s,c)=>s+c[vt.key],0);
+    const repT = cands.filter(c=>c.party==="Rep").reduce((s,c)=>s+c[vt.key],0);
+    const othT = vt.total - demT - repT;
+    const demPct = vt.total > 0 ? (demT/vt.total*100) : 0;
+    const repPct = vt.total > 0 ? (repT/vt.total*100) : 0;
+    const othPct = vt.total > 0 ? (othT/vt.total*100) : 0;
+
+    html += `
+    <div class="vote-type-card">
+      <div class="vt-title">${vt.label} &middot; ${num(vt.total)} votes</div>
+      <div class="vt-stacked-bar">
+        <div class="seg dem" style="width:${demPct.toFixed(1)}%"></div>
+        <div class="seg rep" style="width:${repPct.toFixed(1)}%"></div>
+        <div class="seg oth" style="width:${othPct.toFixed(1)}%"></div>
+      </div>
+      <div class="vt-legend">
+        <span><span class="dot" style="background:var(--dem)"></span> Dem ${demPct.toFixed(1)}%</span>
+        <span><span class="dot" style="background:var(--rep)"></span> Rep ${repPct.toFixed(1)}%</span>
+        <span><span class="dot" style="background:var(--ind)"></span> Ind ${othPct.toFixed(1)}%</span>
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+
+  // ─── TOP 2 COMPARISON ───
+  if (cands.length >= 2) {
+    const c1 = cands[0]; const c2 = cands[1];
+    const margin = c1.total - c2.total;
+    const marginPct = (parseFloat(pct(c1.total, total)) - parseFloat(pct(c2.total, total))).toFixed(1);
+
+    html += `<div class="results-section fade-in" style="animation-delay:0.4s">`;
+    html += `<div class="section-title">Runoff Matchup — ${c1.name} vs ${c2.name}</div>`;
+    html += `<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">
+      <div style="text-align:center">
+        <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">${c1.party}</div>
+        <div style="font-size:22px;font-weight:700;color:var(--${partyClass(c1.party)}-bright, var(--text))">${c1.name}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;margin-top:4px">${pct(c1.total, total)}%</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted)">${num(c1.total)} votes</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">
+          Early: ${num(c1.early)} &middot; Mail: ${num(c1.mail)} &middot; E-Day: ${num(c1.eday)}
+        </div>
+      </div>
+      <div style="text-align:center;padding:0 12px">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Margin</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--accent)">+${num(margin)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim)">+${marginPct}pt</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">${c2.party}</div>
+        <div style="font-size:22px;font-weight:700;color:var(--${partyClass(c2.party)}-bright, var(--text))">${c2.name}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;margin-top:4px">${pct(c2.total, total)}%</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted)">${num(c2.total)} votes</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">
+          Early: ${num(c2.early)} &middot; Mail: ${num(c2.mail)} &middot; E-Day: ${num(c2.eday)}
+        </div>
+      </div>
+    </div></div>`;
+  }
+
+  // ─── COUNTY BREAKDOWN ───
+  html += `<div class="results-section fade-in" style="animation-delay:0.45s">`;
+  html += `<div class="section-title">County Breakdown (${counties.length} counties)</div>`;
+  html += `<div class="county-grid">`;
+
+  counties.forEach(county => {
+    const ct = county.total_votes;
+    const ce = county.eevp || 0;
+    const cpIn = county.precincts_reporting || 0;
+    const cpTot = county.precincts_total || 0;
+
+    const ccands = county.candidates.map(c => {
+      const info = getCand(c.nyt_id);
+      return {
+        id: c.nyt_id, name: info.name, party: info.party,
+        total: c.votes.total || 0, leader: c.leader,
+        early: c.votes.absentee_in_person || 0,
+        mail: c.votes.absentee_mail || 0,
+        eday: c.votes.election_day_in_person || 0,
+      };
+    }).sort((a, b) => b.total - a.total);
+
+    const maxC = ccands[0]?.total || 1;
+    const demC = ccands.filter(c=>c.party==="Dem").reduce((s,c)=>s+c.total,0);
+    const repC = ccands.filter(c=>c.party==="Rep").reduce((s,c)=>s+c.total,0);
+    const othC = ct - demC - repC;
+
+    // Determine county lean
+    const leader = ccands[0];
+    const leaderColor = partyClass(leader?.party || "");
+
+    html += `<div class="county-card">
+      <div class="county-header">
+        <span class="county-name">${county.name}</span>
+        <div class="county-meta">
+          <span>${ce}% est.</span>
+          <span>${cpIn}/${cpTot} pcts</span>
+          <span>${num(ct)} votes</span>
+        </div>
+      </div>
+      <div class="county-body">`;
+
+    // Show top 5 candidates
+    const showCands = ccands.slice(0, 5).filter(c => c.total > 0);
+    const otherCands = ccands.slice(5);
+    const otherVotes = otherCands.reduce((s, c) => s + c.total, 0);
+
+    showCands.forEach(c => {
+      const cp = pct(c.total, ct);
+      const barW = (c.total / maxC * 100).toFixed(1);
+      html += `<div class="county-cand-row">
+        <div class="cc-name">
+          <span class="party-dot ${partyClass(c.party)}" style="width:7px;height:7px"></span>
+          <span style="font-size:12px;font-weight:${c.leader?'700':'400'}">${c.name}</span>
+        </div>
+        <div class="cc-bar-wrap"><div class="cc-bar ${partyClass(c.party)}" style="width:${barW}%"></div></div>
+        <div class="cc-pct">${cp}%</div>
+        <div class="cc-votes">${num(c.total)}</div>
+      </div>`;
+    });
+
+    if (otherVotes > 0) {
+      html += `<div class="county-others">+ ${otherCands.length} others: ${num(otherVotes)} (${pct(otherVotes, ct)}%)</div>`;
+    }
+
+    // Party bar at bottom
+    const dPct = ct > 0 ? (demC/ct*100) : 0;
+    const rPct = ct > 0 ? (repC/ct*100) : 0;
+    const oPct = ct > 0 ? (othC/ct*100) : 0;
+    html += `<div class="county-total-bar">
+      <div class="seg" style="width:${dPct.toFixed(1)}%;background:var(--dem)"></div>
+      <div class="seg" style="width:${rPct.toFixed(1)}%;background:var(--rep)"></div>
+      <div class="seg" style="width:${oPct.toFixed(1)}%;background:var(--ind)"></div>
+    </div>`;
+
+    html += `</div></div>`;
+  });
+
+  html += `</div></div>`;
+
+  // ─── FOOTER ───
+  html += `
+  <footer class="fade-in" style="animation-delay:0.5s">
+    <span>Data: New York Times / Associated Press &middot; ${new Date(race.updated_at).toLocaleString()}</span>
+    <span>GA-14 Special &middot; Nonpartisan jungle primary &middot; Win threshold: 50%+1</span>
+  </footer>`;
+
+  document.getElementById("app").innerHTML = html;
+}
+
+// ─── FETCH & RENDER ───
+async function init() {
+  try {
+    const resp = await fetch(API_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    render(data);
+  } catch (err) {
+    document.getElementById("app").innerHTML = `
+      <div class="error-msg">
+        <strong>Failed to load results:</strong> ${err.message}<br>
+        <small>The NYT endpoint may not be accessible from this context. Try opening this file locally.</small>
+      </div>`;
+  }
+}
+
+init();
+
+// Auto-refresh every 60 seconds
+setInterval(init, 60000);
+</script>
+</body>
+</html>
