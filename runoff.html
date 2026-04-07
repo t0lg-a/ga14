@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html style="color-scheme:light!important">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="color-scheme" content="light">
+<title>GA-14 Runoff Final Projection</title>
+<style>
+:root{color-scheme:light!important}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#f3f4f6!important;color:#111827!important;font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column;padding:8px;max-width:1200px;margin:0 auto;overflow:hidden;gap:6px}
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;flex-wrap:wrap}
+.title h1{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.title .sub{font-size:9px;color:#9ca3af}
+.stats{display:flex;gap:6px;flex-shrink:0}
+.st{background:#fff!important;border-radius:12px;border:1px solid #e5e7eb;padding:6px 12px}
+.st .la{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6b7280}
+.st .va{font-size:22px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.15}
+.st .pct{font-size:10px;color:#6b7280;font-family:ui-monospace,monospace}
+.mo{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.mbar{background:#fff!important;border-radius:10px;border:1px solid #e5e7eb;padding:5px 10px;flex-shrink:0}
+.mbar .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.mbar .la{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6b7280}
+.bar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:#f3f4f6}
+.bar>div{display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;font-family:ui-monospace,monospace}
+.controls{display:flex;justify-content:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
+.pills{display:inline-flex;background:#e5e7eb;border-radius:9999px;padding:2px}
+.pill{padding:4px 9px;border-radius:9999px;border:none;cursor:pointer;font-family:inherit;font-size:10px;font-weight:600;background:transparent;color:#6b7280;transition:all .15s}
+.pill.on{background:#fff!important;color:#1e40af;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.panels{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+.panel{background:#fff!important;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;position:relative;min-height:0}
+.panel svg{width:100%;height:100%;display:block;background:#fff!important}
+.panel-map{flex:3}
+.panel-sc{flex:2}
+@media(min-width:700px){.panels{flex-direction:row}}
+.lg{position:absolute;bottom:4px;left:4px;background:rgba(255,255,255,.95)!important;border-radius:5px;padding:3px 6px;font-size:7px;font-weight:600;border:1px solid #e5e7eb;z-index:2}
+#info{position:absolute;top:4px;right:4px;background:#fff!important;border-radius:10px;padding:8px 12px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:10;display:none;font-size:10px;max-width:230px;border:1px solid #e5e7eb}
+#info .nm{font-weight:800;font-size:13px;color:#111827;margin-bottom:4px}
+#info .ig{display:grid;grid-template-columns:auto auto;gap:2px 10px;font-family:ui-monospace,monospace}
+#info .ig .l{color:#6b7280;font-weight:600}
+#info .ig .v{font-weight:800;text-align:right}
+.ft{flex-shrink:0;text-align:center;font-size:7px;color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="hdr">
+<div class="title">
+<h1>GA-14 Runoff Final Projection</h1>
+<div class="sub">Apr 7 · Monte Carlo medians · 20k sims · α∈U(0.15,0.55) demobilization split</div>
+</div>
+<div class="stats">
+<div class="st"><div class="la">Total</div><div class="va" id="sr"></div></div>
+<div class="st"><div class="la">Harris (D)</div><div class="va" style="color:#2563eb" id="sd"></div><div class="pct" id="sdp"></div></div>
+<div class="st"><div class="la">Fuller (R)</div><div class="va" style="color:#dc2626" id="sg"></div><div class="pct" id="sgp"></div></div>
+</div>
+</div>
+
+<div class="mbar">
+<div class="top"><span class="la">Projected margin · MC distribution · P(Harris) = 11%</span><span class="mo" style="font-weight:700;font-size:12px;color:#dc2626" id="sm"></span></div>
+<svg id="ubar" viewBox="0 0 600 44" preserveAspectRatio="none" style="width:100%;height:38px;display:block"></svg>
+</div>
+
+<div class="controls">
+<div class="pills">
+<button class="pill on" id="b-mg">Margin</button>
+<button class="pill" id="b-to">Turnout %</button>
+</div>
+</div>
+
+<div class="panels">
+<div class="panel panel-map">
+<svg id="map" viewBox="0 0 620 560" preserveAspectRatio="xMidYMid meet">
+<g id="mg"></g>
+</svg>
+<div class="lg" id="lg"></div>
+<div id="info">
+<div class="nm" id="i-nm"></div>
+<div class="ig">
+<span class="l">Mar 2P pop</span><span class="v" id="i-pop"></span>
+<span class="l">Proj total</span><span class="v" id="i-tt"></span>
+<span class="l">Turnout %</span><span class="v" id="i-to"></span>
+<span class="l">Harris (D)</span><span class="v" id="i-d"></span>
+<span class="l">Fuller (R)</span><span class="v" id="i-r"></span>
+<span class="l">D%</span><span class="v" id="i-dp"></span>
+<span class="l">Margin</span><span class="v" id="i-mg"></span>
+</div>
+</div>
+</div>
+
+<div class="panel panel-sc" style="padding:6px">
+<div style="font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#6b7280;margin-bottom:2px;padding-left:30px">D% vs turnout % · sized by March 2P population</div>
+<svg id="scatter" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid meet" style="background:#fff!important"></svg>
+</div>
+</div>
+
+<div class="ft">Per-county fit: proj total = (runoff EV / March EV) × March 2P total · D% held at March baseline · ±27pp band = MC 90% CI</div>
+</div>
+
+<script>
+var COUNTIES = {
+ 'Cobb':       {pop:24684, tot:18506, d:10532, r: 7974, lon:-84.62, lat:33.94},
+ 'Paulding':   {pop:24442, tot:18041, d: 8610, r: 9431, lon:-84.87, lat:33.92},
+ 'Floyd':      {pop:15422, tot:11326, d: 5128, r: 6198, lon:-85.21, lat:34.27},
+ 'Whitfield':  {pop:12513, tot: 9173, d: 4077, r: 5096, lon:-84.85, lat:34.78},
+ 'Catoosa':    {pop:11712, tot: 8494, d: 3035, r: 5459, lon:-85.13, lat:34.90},
+ 'Walker':     {pop:10257, tot: 7372, d: 2349, r: 5023, lon:-85.31, lat:34.74},
+ 'Polk':       {pop: 5153, tot: 3716, d: 1234, r: 2482, lon:-85.18, lat:34.00},
+ 'Murray':     {pop: 4357, tot: 3094, d:  754, r: 2340, lon:-84.74, lat:34.79},
+ 'Chattooga':  {pop: 3650, tot: 2610, d:  769, r: 1841, lon:-85.34, lat:34.47},
+ 'Dade':       {pop: 3098, tot: 2219, d:  621, r: 1598, lon:-85.50, lat:34.85}
+};
+
+var TOT_T=0,TOT_D=0,TOT_R=0,TOT_POP=0;
+Object.keys(COUNTIES).forEach(function(k){
+ var c=COUNTIES[k];
+ c.dp=c.d/c.tot;
+ c.mar=(c.dp-0.5)*200;
+ c.toPct=(c.tot/c.pop)*100;
+ TOT_T+=c.tot; TOT_D+=c.d; TOT_R+=c.r; TOT_POP+=c.pop;
+});
+var TOT_MAR=(TOT_D-TOT_R)/TOT_T*100;
+
+var pops=Object.values(COUNTIES).map(function(c){return c.pop});
+var P_MAX=Math.max.apply(null,pops);
+
+function fmt(n){return Math.round(n).toLocaleString()}
+
+document.getElementById('sr').textContent=fmt(TOT_T);
+document.getElementById('sd').textContent=fmt(TOT_D);
+document.getElementById('sg').textContent=fmt(TOT_R);
+document.getElementById('sdp').textContent=(TOT_D/TOT_T*100).toFixed(1)+'%';
+document.getElementById('sgp').textContent=(TOT_R/TOT_T*100).toFixed(1)+'%';
+document.getElementById('sm').textContent='R+'+Math.abs(TOT_MAR).toFixed(1);
+
+// ============================================================
+// UNCERTAINTY BAR — MC distribution
+// p5/p25/p50/p75/p95 in D-R margin pp (D positive)
+// From the 20k MC: margin p5=-27.36 p25=-18.86 p50=-12.15 p75=-5.51 p95=+3.65
+// ============================================================
+(function(){
+ var svgNS='http://www.w3.org/2000/svg';
+ function ce(t,a){var e=document.createElementNS(svgNS,t);for(var k in a)e.setAttribute(k,a[k]);return e}
+ var p05=-27.36,p25=-18.86,p50=-12.15,p75=-5.51,p95=3.65;
+ var range=30; // -30 to +30 pp
+ var W=600,H=44;
+ function toX(m){return ((m+range)/(2*range))*W}
+ var svg=document.getElementById('ubar');
+ svg.innerHTML='';
+ // Background gradient track
+ var defs=document.createElementNS(svgNS,'defs');
+ var grad=document.createElementNS(svgNS,'linearGradient');
+ grad.setAttribute('id','ugrad');
+ grad.setAttribute('x1','0');grad.setAttribute('x2','1');
+ var stops=[['0','#991b1b'],['0.25','#dc2626'],['0.45','#fca5a5'],['0.5','#f3f4f6'],['0.55','#93c5fd'],['0.75','#2563eb'],['1','#1e40af']];
+ stops.forEach(function(s){
+  var st=document.createElementNS(svgNS,'stop');
+  st.setAttribute('offset',s[0]);st.setAttribute('stop-color',s[1]);
+  grad.appendChild(st);
+ });
+ defs.appendChild(grad);
+ svg.appendChild(defs);
+ // Background track (faint gradient)
+ svg.appendChild(ce('rect',{x:0,y:18,width:W,height:14,fill:'url(#ugrad)','fill-opacity':'0.18',rx:7}));
+ // 90% CI band
+ svg.appendChild(ce('rect',{x:toX(p05),y:21,width:toX(p95)-toX(p05),height:8,fill:'#9ca3af','fill-opacity':'0.5',rx:4}));
+ // 50% IQR band
+ svg.appendChild(ce('rect',{x:toX(p25),y:18,width:toX(p75)-toX(p25),height:14,fill:p50>=0?'#2563eb':'#dc2626','fill-opacity':'0.75',rx:4}));
+ // Median tick
+ svg.appendChild(ce('line',{x1:toX(p50),x2:toX(p50),y1:14,y2:36,stroke:'#111827','stroke-width':'3'}));
+ // 50/50 center line
+ svg.appendChild(ce('line',{x1:toX(0),x2:toX(0),y1:11,y2:39,stroke:'#374151','stroke-width':'1.5','stroke-dasharray':'2,2','stroke-opacity':'0.6'}));
+ // Tick labels
+ [['R+30',-30],['R+15',-15],['EVEN',0],['D+15',15],['D+30',30]].forEach(function(t){
+  var x=toX(t[1]);
+  var anc=t[1]<-25?'start':t[1]>25?'end':'middle';
+  var lb=ce('text',{x:x,y:9,'text-anchor':anc,'font-size':'8','font-weight':'700',fill:'#9ca3af','font-family':'ui-monospace,monospace'});
+  lb.textContent=t[0];svg.appendChild(lb);
+ });
+ // Median label below
+ var ml=ce('text',{x:toX(p50),y:43,'text-anchor':'middle','font-size':'9','font-weight':'700',fill:'#111827','font-family':'ui-monospace,monospace'});
+ ml.textContent='median R+'+Math.abs(p50).toFixed(1);
+ svg.appendChild(ml);
+})();
+
+function mC(m){return m>30?'#1e40af':m>15?'#2563eb':m>5?'#60a5fa':m>0?'#93c5fd':m>-5?'#fca5a5':m>-15?'#f87171':m>-30?'#dc2626':'#991b1b'}
+function tC(p){
+ var f=(p-70)/(76-70);
+ f=Math.max(0,Math.min(1,f));
+ if(f<0.15)return '#ffffcc';
+ if(f<0.30)return '#ffeda0';
+ if(f<0.45)return '#fed976';
+ if(f<0.60)return '#feb24c';
+ if(f<0.75)return '#fd8d3c';
+ if(f<0.90)return '#fc4e2a';
+ return '#bd0026';
+}
+
+var dm='margin';
+function fl(c){return dm==='margin'?mC(c.mar):tC(c.toPct)}
+
+var lons=[],lats=[];
+Object.values(COUNTIES).forEach(function(c){lons.push(c.lon);lats.push(c.lat)});
+var lonMin=Math.min.apply(null,lons),lonMax=Math.max.apply(null,lons);
+var latMin=Math.min.apply(null,lats),latMax=Math.max.apply(null,lats);
+var pad=90;
+function px(lon){return pad+(lon-lonMin)/(lonMax-lonMin)*(620-2*pad)}
+function py(lat){return pad+(latMax-lat)/(latMax-latMin)*(560-2*pad)}
+
+function rSize(pop){
+ var minR=20,maxR=58;
+ var f=Math.sqrt(pop/P_MAX);
+ return minR+(maxR-minR)*f;
+}
+
+var svgNS='http://www.w3.org/2000/svg';
+function ce(t,a){var e=document.createElementNS(svgNS,t);for(var k in a)e.setAttribute(k,a[k]);return e}
+var mg=document.getElementById('mg');
+
+var bubbles={};
+var orderedKeys=Object.keys(COUNTIES).sort(function(a,b){return COUNTIES[b].pop-COUNTIES[a].pop});
+orderedKeys.forEach(function(k){
+ var c=COUNTIES[k];
+ var x=px(c.lon),y=py(c.lat),r=rSize(c.pop);
+ var ci=ce('circle',{cx:x,cy:y,r:r,fill:fl(c),stroke:'#fff','stroke-width':'2.5','fill-opacity':'0.88',style:'cursor:pointer'});
+ ci.dataset.k=k;
+ mg.appendChild(ci);
+ bubbles[k]=ci;
+
+ var lb=ce('text',{x:x,y:y-3,'text-anchor':'middle','font-size':r>40?'12':'10','font-weight':'800',fill:'#111827','font-family':'Inter,sans-serif','pointer-events':'none'});
+ lb.textContent=k.length>9?k.substring(0,8)+'.':k;
+ mg.appendChild(lb);
+
+ var sub=ce('text',{x:x,y:y+10,'text-anchor':'middle','font-size':r>40?'10':'9','font-weight':'700',fill:'#374151','font-family':'ui-monospace,monospace','pointer-events':'none','font-variant-numeric':'tabular-nums'});
+ sub.textContent=(c.mar>0?'D+':'R+')+Math.abs(c.mar).toFixed(0);
+ mg.appendChild(sub);
+});
+
+var info=document.getElementById('info');
+var selK=null;
+function showInfo(k){
+ if(!k){info.style.display='none';return}
+ var c=COUNTIES[k];
+ info.style.display='block';
+ document.getElementById('i-nm').textContent=k;
+ document.getElementById('i-pop').textContent=fmt(c.pop);
+ document.getElementById('i-tt').textContent=fmt(c.tot);
+ var to=document.getElementById('i-to');
+ to.textContent=c.toPct.toFixed(1)+'%';
+ to.style.color=c.toPct>=80?'#059669':c.toPct>=70?'#374151':'#dc2626';
+ var d=document.getElementById('i-d');d.textContent=fmt(c.d);d.style.color='#2563eb';
+ var r=document.getElementById('i-r');r.textContent=fmt(c.r);r.style.color='#dc2626';
+ var dp=document.getElementById('i-dp');
+ dp.textContent=(c.dp*100).toFixed(1)+'%';
+ dp.style.color=c.dp>=0.5?'#2563eb':'#dc2626';
+ var mge=document.getElementById('i-mg');
+ mge.textContent=(c.mar>0?'D+':'R+')+Math.abs(c.mar).toFixed(1);
+ mge.style.color=c.mar>0?'#2563eb':'#dc2626';
+}
+mg.addEventListener('click',function(e){
+ var k=e.target.dataset.k;
+ if(!k)return;
+ if(selK===k){selK=null;showInfo(null)}else{selK=k;showInfo(k)}
+ updateScatterHL();
+});
+mg.addEventListener('mouseover',function(e){var k=e.target.dataset.k;if(k&&!selK)showInfo(k)});
+mg.addEventListener('mouseout',function(){if(!selK)showInfo(null)});
+
+function updateFills(){
+ Object.keys(COUNTIES).forEach(function(k){bubbles[k].setAttribute('fill',fl(COUNTIES[k]))});
+ updateLegend();
+ buildScatter();
+}
+function updateLegend(){
+ var el=document.getElementById('lg');
+ if(dm==='margin')el.innerHTML='<span class="mo" style="font-size:7px;color:#1e40af">D+30</span><span style="display:inline-block;width:60px;height:6px;border-radius:3px;background:linear-gradient(90deg,#1e40af,#93c5fd,#fca5a5,#991b1b);vertical-align:middle;margin:0 2px"></span><span class="mo" style="font-size:7px;color:#991b1b">R+30</span>';
+ else el.innerHTML='<span style="font-size:7px;font-weight:700;color:#6b7280;text-transform:uppercase">TURNOUT </span><span class="mo" style="font-size:7px">70%</span><span style="display:inline-block;width:60px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ffffcc,#feb24c,#bd0026);vertical-align:middle;margin:0 2px"></span><span class="mo" style="font-size:7px">76%</span>';
+}
+updateLegend();
+
+function setA(ids,a){ids.forEach(function(id){document.getElementById(id).className='pill'+(id===a?' on':'')})}
+document.getElementById('b-mg').onclick=function(){dm='margin';setA(['b-mg','b-to'],'b-mg');updateFills()};
+document.getElementById('b-to').onclick=function(){dm='turnout';setA(['b-mg','b-to'],'b-to');updateFills()};
+
+var scSvg=document.getElementById('scatter');
+var sL=46,sR=14,sT=14,sB=30,sW=600,sH=380;
+var sxMin=15,sxMax=60;
+var syMin=68,syMax=78;
+
+function sX(v){return sL+(v-sxMin)/(sxMax-sxMin)*(sW-sL-sR)}
+function sY(v){return sT+(1-(v-syMin)/(syMax-syMin))*(sH-sT-sB)}
+
+function buildScatter(){
+ scSvg.innerHTML='';
+ [20,30,40,50].forEach(function(v){
+  scSvg.appendChild(ce('line',{x1:sX(v),x2:sX(v),y1:sT,y2:sH-sB,stroke:'#f0f0f0','stroke-width':'1'}));
+  var t=ce('text',{x:sX(v),y:sH-sB+15,'text-anchor':'middle','font-size':'10','font-family':'ui-monospace,monospace','font-weight':'600',fill:'#9ca3af'});
+  t.textContent=v+'%';scSvg.appendChild(t);
+ });
+ [70,72,74,76,78].forEach(function(v){
+  scSvg.appendChild(ce('line',{x1:sL,x2:sW-sR,y1:sY(v),y2:sY(v),stroke:'#f0f0f0','stroke-width':'1'}));
+  var t=ce('text',{x:sL-4,y:sY(v)+4,'text-anchor':'end','font-size':'10','font-family':'ui-monospace,monospace','font-weight':'600',fill:'#9ca3af'});
+  t.textContent=v+'%';scSvg.appendChild(t);
+ });
+ scSvg.appendChild(ce('line',{x1:sX(50),x2:sX(50),y1:sT,y2:sH-sB,stroke:'#d1d5db','stroke-width':'1.2','stroke-dasharray':'4,3'}));
+ var ml=ce('text',{x:sX(50)+3,y:sT+10,'font-size':'8','font-weight':'700',fill:'#6b7280'});
+ ml.textContent='50% (flip)';scSvg.appendChild(ml);
+
+ var xl=ce('text',{x:sW/2,y:sH-4,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#6b7280','letter-spacing':'.04em'});
+ xl.textContent='PROJECTED D%';scSvg.appendChild(xl);
+ var yl=ce('text',{x:14,y:sH/2,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#6b7280','letter-spacing':'.04em',transform:'rotate(-90,14,'+sH/2+')'});
+ yl.textContent='TURNOUT % (vs March)';scSvg.appendChild(yl);
+
+ Object.keys(COUNTIES).sort(function(a,b){return COUNTIES[b].pop-COUNTIES[a].pop}).forEach(function(k){
+  var c=COUNTIES[k];
+  var dp=c.dp*100;
+  var r=Math.max(7,Math.sqrt(c.pop/22));
+  var col=dm==='margin'?mC(c.mar):tC(c.toPct);
+  var ci=ce('circle',{cx:sX(dp),cy:sY(c.toPct),r:r,fill:col,'fill-opacity':'0.7',stroke:col,'stroke-width':'1.5',style:'cursor:pointer'});
+  ci.dataset.k=k;scSvg.appendChild(ci);
+  var lb=ce('text',{x:sX(dp),y:sY(c.toPct)-r-4,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#374151','font-family':'Inter,sans-serif','pointer-events':'none'});
+  lb.textContent=k;scSvg.appendChild(lb);
+ });
+ var hl=ce('circle',{r:5,fill:'none',stroke:'#111827','stroke-width':'2.5',display:'none'});
+ hl.id='sc-hl';scSvg.appendChild(hl);
+ updateScatterHL();
+}
+function updateScatterHL(){
+ var hl=document.getElementById('sc-hl');
+ if(!hl)return;
+ if(selK&&COUNTIES[selK]){
+  var c=COUNTIES[selK];
+  hl.setAttribute('cx',sX(c.dp*100));
+  hl.setAttribute('cy',sY(c.toPct));
+  hl.setAttribute('r',Math.max(10,Math.sqrt(c.pop/22)+4));
+  hl.setAttribute('display','');
+ }else{hl.setAttribute('display','none')}
+}
+scSvg.addEventListener('click',function(e){
+ var k=e.target.dataset.k;
+ if(!k)return;
+ if(selK===k){selK=null;showInfo(null)}else{selK=k;showInfo(k)}
+ updateScatterHL();
+});
+scSvg.addEventListener('mouseover',function(e){var k=e.target.dataset.k;if(k&&!selK)showInfo(k)});
+scSvg.addEventListener('mouseout',function(){if(!selK)showInfo(null)});
+buildScatter();
+</script>
+</body>
+</html>
